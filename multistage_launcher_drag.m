@@ -53,3 +53,23 @@ for i=1:number_of_points
     Cd_friction_wh = Cd_friction_mean_wh * warhead_surface/ref_surface_geometry1;
     Cd_friction_wh_vector(i) = Cd_friction_wh
 end
+
+%% Cd_cylinder1 = Cd_shape_cylinder1 + Cd_friction_cylinder1
+% Friction Drag
+l_cilynder1 = 4.5 + 10.7 + 6.6;
+cyl1_surface = pi*d_warhead*l_cilynder1;
+Cd_friction_cyl1_vector = zeros(1,number_of_points);
+% Turbulent flow applies as required by exercise text
+for i=1:number_of_points
+    Re_number = (rho0 * M_(i) * a0 * l_cilynder1) / nu;
+    Cd_friction_incompres = 0.288 * log10( Re_number)^-2.45; %Turbulent incompressible
+    if i<transonic_start_point
+        Cd_friction_compres = Cd_friction_incompres * (1/(1+0.08*M_(i)*M_(i))); %Turbulent subsonic compressible
+    elseif i>=supersonic_start_point
+        Cd_friction_compres = Cd_friction_incompres * 1/(1+(gama-1)/2*M_(i)*M_(i))^0.467; %Turbulent supersonic compressible
+    else continue
+    end
+    Cd_friction_mean_cyl1 = 1.25*Cd_friction_compres
+    Cd_friction_cyl1 = Cd_friction_mean_cyl1 * cyl1_surface/ref_surface_geometry1;
+    Cd_friction_cyl1_vector(i) = Cd_friction_cyl1
+end
