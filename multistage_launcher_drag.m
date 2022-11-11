@@ -17,8 +17,8 @@ cylinder3_length = 6.6; %m
 cylinder4_length = 21; %m
 d_base = 5; %m
 total_length = warhead_length + cylinder1_length + cylinder2_length...
-                + cylinder3_length + cylinder4_length + d_base;
-slenderness = total_length/warhead_d; 
+                + cylinder3_length + cylinder4_length;
+slenderness = total_length/d_base; 
 
 
 
@@ -35,14 +35,13 @@ number_of_points = size(M_,2);
 transonic_start_point = cast((0.9+interval)/interval + 1,"int16"); %M>0.9<1.2 transonic
 supersonic_start_point = cast(1.2/interval + 1,"int16"); %M=1.2 supersonic
 
-% Wave drag for launcher
+%% Wave drag for launcher
 theta_cone = atan(warhead_d/(2*warhead_length))*180/pi;
 warhead_surface = pi*warhead_d/2*sqrt(warhead_length^2 + (warhead_d/2)^2);
 Cd_wave_vector = zeros(1,number_of_points);
 
-for i=supersonic_start_point:number_of_points
-    Cd_wave_vector(i) = (0.083 + 0.096/(M_(i)*M_(i))) * (theta_cone/10)^1.69;
-end
+% raised https://moodle.upm.es/titulaciones/oficiales/mod/forum/discuss.php?d=9396#p15316
+% advised to use warhead, cylinder1+cylinder2, cone trunk, cylinder3+cylinder4
 
 % Friction Drag for warhead
 Cd_friction_wh_vector = zeros(1,number_of_points);
@@ -54,24 +53,26 @@ for i=1:number_of_points
     Cd_friction_wh_vector(i) = Cd_friction_wh;
 end
 
-% Friction Drag for cylinder1
-Cd_friction_cylinder1_vector = zeros(1,number_of_points);
-reference_length = cylinder1_length;
-wet_surface = pi * warhead_d * cylinder1_length; %surface in contact with the flow
+% Friction Drag for head_cylinder = cylinder1 + cylinder2 (same shape)
+Cd_friction_head_cylinder_vector = zeros(1,number_of_points);
+reference_length = cylinder1_length + cylinder2_length;
+wet_surface = pi * warhead_d * reference_length; %surface in contact with the flow
 element_shape = shapeType.flat;
 for i=1:number_of_points
-    Cd_friction_cylinder1 = getFrictionDragCoefficient(M_(i), reference_length, element_shape, wet_surface, reference_surface);
-    Cd_friction_cylinder1_vector(i) = Cd_friction_cylinder1;
+    Cd_friction_head_cylinder = getFrictionDragCoefficient(M_(i), reference_length, element_shape, wet_surface, reference_surface);
+    Cd_friction_head_cylinder_vector(i) = Cd_friction_head_cylinder;
 end
 
-% Friction Drag for cylinder2
-Cd_friction_cylinder2_vector = zeros(1,number_of_points);
-reference_length = cylinder2_length;
-wet_surface = pi * warhead_d * cylinder2_length; %surface in contact with the flow
+%% TODO: Cone trunk
+
+% Friction Drag for tail_cylinder = cylinder3 + cylinder4
+Cd_friction_tail_cylinder_vector = zeros(1,number_of_points);
+reference_length = cylinder3_length + cylinder4_length;
+wet_surface = pi * warhead_d * reference_length; %surface in contact with the flow
 element_shape = shapeType.flat;
 for i=1:number_of_points
-    Cd_friction_cylinder2 = getFrictionDragCoefficient(M_(i), reference_length, element_shape, wet_surface, reference_surface);
-    Cd_friction_cylinder2_vector(i) = Cd_friction_cylinder2;
+    Cd_friction_tail_cylinder = getFrictionDragCoefficient(M_(i), reference_length, element_shape, wet_surface, reference_surface);
+    Cd_friction_tail_vector(i) = Cd_friction_tail_cylinder;
 end
 
 %check for cylinder1+cylinder2
@@ -86,19 +87,13 @@ end
 % % test = Cd_friction_cylinder1_vector + Cd_friction_cylinder2_vector
 
 
-% Subsonic Cd_shape = coefficient * Cd_friction_launcher? question
-% raised https://moodle.upm.es/titulaciones/oficiales/mod/forum/discuss.php?d=9396#p15316
-% first approach would use d_warhead + total_length to get coefficient value
-% for i=1:transonic_start_point-1
-%     Cd_shape =  (60/slenderness^3 + 0.0025*slenderness) * Cd_friction_vector(i);
-%     Cd_vector(i) = Cd_shape; 
-% end
+
 
 %% Cd_cylinder1 = Cd_shape_cylinder1 + Cd_friction_cylinder1
 % Friction Drag
-l_cilynder1 = 4.5 + 10.7 + 6.6;
-cyl1_surface = pi*warhead_d*l_cilynder1;
-Cd_friction_cyl1_vector = zeros(1,number_of_points);
+% l_cilynder1 = 4.5 + 10.7 + 6.6;
+% cyl1_surface = pi*warhead_d*l_cilynder1;
+% Cd_friction_cyl1_vector = zeros(1,number_of_points);
 % Turbulent flow applies as required by exercise text
 % for i=1:number_of_points
 %     Re_number = (rho0 * M_(i) * a0 * l_cilynder1) / nu;
@@ -114,8 +109,42 @@ Cd_friction_cyl1_vector = zeros(1,number_of_points);
 %     Cd_friction_cyl1_vector(i) = Cd_friction_cyl1
 % end
 
+Cd_friction = zeros(1,number_of_points);
+%Cd_friction = 
 
+% Subsonic Cd_shape = coefficient * Cd_friction_launcher? question
+% raised https://moodle.upm.es/titulaciones/oficiales/mod/forum/discuss.php?d=9396#p15316
+% advised to use first approach would use d_warhead + total_length to get coefficient value
+% for i=1:transonic_start_point-1
+%     Cd_shape =  (60/slenderness^3 + 0.0025*slenderness) * Cd_friction_vector(i);
+%     Cd_vector(i) = Cd_shape; 
+% end
+for i=1:number_of_points
+    geometry.theta_cone = theta_cone
+    Cd_wave_vector(i) = getWaveDrag(M_(i), shapeType.cone, geometry, slenderness, .003)
+end
 
+function drag_coefficient= getWaveDrag(mach_number, element_shape_type, geometry, slenderness, friction_drag_cf)
+% reference_length is mandatory for subsonic
+% friction_drag_cf is mandatory for subsonic points
+    flowKind = getFlowVelocityRegime(mach_number);
+    if flowVelocityRegime.transonic == flowKind
+        drag_coefficient=-1; % 'error value' for transonic
+        return 
+    end
+    
+    if flowKind == flowVelocityRegime.supersonic
+        switch element_shape_type
+            case shapeType.cone
+                drag_coefficient = (0.083 + 0.096/(mach_number^2)) * (geometry.theta_cone/10)^1.69;
+            otherwise
+                error('NIF. Sorry,but wave drag has been implemented only for cone shape.')
+        end
+    elseif flowKind == flowVelocityRegime.subsonic
+        drag_coefficient =  (60/slenderness^3 + 0.0025*slenderness) * friction_drag_cf;
+    end
+end
+   
    
 function drag_coefficient = getFrictionDragCoefficient(mach_number, reference_length, element_shape_type, wet_surface, reference_surface)
     if flowVelocityRegime.transonic == getFlowVelocityRegime(mach_number)
@@ -200,9 +229,54 @@ function regime = getFlowVelocityRegime(mach_number)
 end
 
 %% Would return sea level Reynolds otherwise specified
-function Re = getReynoldsNumber(mach_number, reference_length)
-    rho0 = 1.22557; %sea level air density kg/m³
-    nu  = 1.8e-5;  %air viscosity
-    a0 = 340; %sea level sound speed
-    Re  = (rho0 * mach_number * a0 * reference_length) / nu;
+function Re = getReynoldsNumber(mach_number, reference_length, height)
+    arguments
+        mach_number
+        reference_length
+        height (1,1) double = 0
+    end
+%     rho0 = 1.22557; %sea level air density kg/m³
+%     mu  = 1.8e-5;  %air viscosity
+%     a0 = 340; %sea level sound speed    isaData = getISAValuesFromHeight(height)
+    isaData = getISAValuesFromHeight(height);
+    a=isaData(1);
+    rho = isaData(2);
+    temperature = isaData(3);
+    mu = getAirDynamicViscosity(temperature);
+    Re  = (rho * mach_number * a * reference_length) / mu;
+end
+
+%From sutherland 's formula https://www.grc.nasa.gov/WWW/K-12/airplane/viscosity.html
+function mu = getAirDynamicViscosity(temperature)
+%Temperature Kelvin
+    mu0 = 3.62e-7 * 100 *0.4536 / 0.3048 %from lb-sec/ft to kg / sec*m)
+    T = temperature / 1.8 %kelvin to rankine required by empyrical formula
+    T0 = 518.7 %Rankine
+    mu = mu0 * ((T / T0)^1.5) * ((T0 + 198.72) / (T + 198.72));
+end
+
+
+%inspired by https://github.com/LucianoGP95/International-Standard-Atmosphere-calculator...
+% /blob/main/ISA%20calculator/International_Standard_Atmosphere.mlx
+function isa_data = getISAValuesFromHeight(height)
+    g0= 9.81; %m/s^2  
+    To = 288.15; %Kelvin
+    po = 101325; %Pa
+    R = 287.04; %Air constant
+    p11 = 22632; %Pa Above tropopause
+    T11 = 216.65; %K Above tropopause
+    h11 = 11000; %meters
+    a0 = 340.294; %m/s
+    
+    %Solves air conditions for a specific height
+    if height<11001 %Under tropopause
+        T = To-6.5*(height/1000);
+        p = po*(1-0.0065*(height/To))^5.2561;
+    else %Above tropopause
+        T = 216.65;
+        p = p11*exp(-g/(R*T11)*(height-h11));
+    end
+    rho = p/(R*T);
+    a = sqrt(1.41*p/rho);
+    isa_data = [a,rho, T];
 end
