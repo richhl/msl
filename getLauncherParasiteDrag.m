@@ -152,7 +152,11 @@ end
    
    
 function drag_coefficient = getFrictionDragCoefficient(mach_number, reference_length, element_shape_type, wet_surface, reference_surface, constant_Reynolds, height)
-    Cd_friction_incompres = getFrictionDragIncompressibleCf(mach_number, reference_length, constant_Reynolds, height);
+    mach_number
+    reference_length
+    constant_Reynolds
+    height
+    Cd_friction_incompres = getFrictionDragIncompressibleCf(mach_number, reference_length, constant_Reynolds, height)
     Cd_friction_compres = getFrictionDragCompressibleCf(mach_number, reference_length, Cd_friction_incompres, constant_Reynolds, height);
     Cd_friction_mean_wh = getMeanFrictionDrag(element_shape_type, Cd_friction_compres);
     drag_coefficient = Cd_friction_mean_wh * wet_surface/reference_surface;

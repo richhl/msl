@@ -16,7 +16,7 @@ function isa_data = getISAValuesFromHeight(height)
         p = po*(1-0.0065*(height/To))^5.2561;
     else %Above tropopause
         T = 216.65;
-        p = p11*exp(-g/(R*T11)*(height-h11));
+        p = p11*exp(-g0/(R*T11)*(height-h11));
     end
     rho = p/(R*T);
     a = sqrt(1.41*p/rho);
