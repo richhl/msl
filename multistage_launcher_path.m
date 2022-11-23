@@ -13,11 +13,13 @@ params = paramSet('Isp', [248.1172 293.8785 470.0419 0],...
 				 'CD0',0,...
 				 'g0',9.81);
 
-%'Energy' test, vertical launch eating all stages (875 s).
-path = intMultiStage2DWithDrag([0 875],[1e-7; 0; 1e-7; 0], params);
+vertical_path = intMultiStage2DWithDrag([0 30],[1e-7; 0; 1e-7; 0], params);
+steering_path = intMultiStage2DWithDrag([30 300], vertical_path.y(:,end) + [0; .45*pi/180; 0; 0], params);%steering angle injected
+guided_path = intMultiStage2DWithDrag([300 875], steering_path.y(:,end), params);
 
-speed_vector=path.y(1,:);
-height_vector=path.y(3,:);
+
+speed_vector=guided_path.y(1,:);
+height_vector=guided_path.y(3,:);
 
 max_speed=max(speed_vector);
 max_height=max(height_vector)
@@ -25,27 +27,47 @@ max_height=max(height_vector)
 
 figure
 drawCircle; hold on;
-plotOrbit(path,'.-b');
+plotOrbit(vertical_path,'.-b');
+plotOrbit(steering_path,'.-b');
+plotOrbit(guided_path,'.-b');
 
-figure
-subplot(2,1,1);
-plot(path.x,path.y(3,:),'.-k'); grid; hold on;
-xline(path.p.t0(2), 'r')
-xline(path.p.t0(3), 'r')
-xline(path.p.t0(4), 'r')
-xlim([0 25000])
-ylabel('z (km)')
-xlabel('t (s)')
-subplot(2,1,2);
-plot(path.x,path.y(1,:)./1000,'.-k'); grid; hold on;
-xline(path.p.t0(2), 'r')
-xline(path.p.t0(3), 'r')
-xline(path.p.t0(4), 'r')
-xlim([0 25000])
-ylabel('v (km/s)')
-xlabel('t (s)')
 
-%clear path
+% figure
+% subplot(2,1,1);
+% plot(steering_path.x,steering_path.y(3,:),'.-k'); grid; hold on;
+% xline(steering_path.p.t0(2), 'r')
+% xline(steering_path.p.t0(3), 'r')
+% xline(steering_path.p.t0(4), 'r')
+% %xlim([0 25000])
+% ylabel('z (km)')
+% xlabel('t (s)')
+% subplot(2,1,2);
+% plot(steering_path.x,steering_path.y(1,:)./1000,'.-k'); grid; hold on;
+% xline(steering_path.p.t0(2), 'r')
+% xline(steering_path.p.t0(3), 'r')
+% xline(steering_path.p.t0(4), 'r')
+% %xlim([0 25000])
+% ylabel('v (km/s)')
+% xlabel('t (s)')
+
+% figure
+% subplot(2,1,1);
+% plot(vertical_path.x,vertical_path.y(3,:),'.-k'); grid; hold on;
+% xline(vertical_path.p.t0(2), 'r')
+% xline(vertical_path.p.t0(3), 'r')
+% xline(vertical_path.p.t0(4), 'r')
+% xlim([0 25000])
+% ylabel('z (km)')
+% xlabel('t (s)')
+% subplot(2,1,2);
+% plot(vertical_path.x,vertical_path.y(1,:)./1000,'.-k'); grid; hold on;
+% xline(vertical_path.p.t0(2), 'r')
+% xline(vertical_path.p.t0(3), 'r')
+% xline(vertical_path.p.t0(4), 'r')
+% xlim([0 25000])
+% ylabel('v (km/s)')
+% xlabel('t (s)')
+
 
 % P.g0=9.81
 % P.Rt=6378e3

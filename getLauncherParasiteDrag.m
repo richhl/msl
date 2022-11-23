@@ -156,7 +156,7 @@ function drag_coefficient = getFrictionDragCoefficient(mach_number, reference_le
     reference_length
     constant_Reynolds
     height
-    Cd_friction_incompres = getFrictionDragIncompressibleCf(mach_number, reference_length, constant_Reynolds, height)
+    Cd_friction_incompres = getFrictionDragIncompressibleCf(mach_number, reference_length, constant_Reynolds, height);
     Cd_friction_compres = getFrictionDragCompressibleCf(mach_number, reference_length, Cd_friction_incompres, constant_Reynolds, height);
     Cd_friction_mean_wh = getMeanFrictionDrag(element_shape_type, Cd_friction_compres);
     drag_coefficient = Cd_friction_mean_wh * wet_surface/reference_surface;
@@ -245,7 +245,7 @@ function Re = getReynoldsNumber(mach_number, reference_length, constant_Reynolds
     % As advised for this work
     % https://moodle.upm.es/titulaciones/oficiales/mod/forum/discuss.php?d=9396#p19599
     if constant_Reynolds
-        Re = reference_length * 5e7
+        Re = reference_length * 5e7;
         return
     end
     %     rho0 = 1.22557; %sea level air density kg/m³
@@ -256,7 +256,7 @@ function Re = getReynoldsNumber(mach_number, reference_length, constant_Reynolds
     rho = isaData(2);
     temperature = isaData(3);
     mu = getAirDynamicViscosity(temperature);
-    Re  = (rho * mach_number * a * reference_length) / mu
+    Re  = (rho * mach_number * a * reference_length) / mu;
 end
 
 %From sutherland 's formula https://www.grc.nasa.gov/WWW/K-12/airplane/viscosity.html

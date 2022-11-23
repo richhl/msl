@@ -1,4 +1,4 @@
-function m = intMultiStage2D(tspan, IC, varargin)
+function m = intMultiStage2DWithDrag(tspan, IC, varargin)
 	if nargin < 3
 		params = paramSet();
 	else
@@ -23,15 +23,21 @@ function yp = odefun(t, y, P)
 	I = interp1(P.t0, P.i, t,'previous', 'extrap');
 	
     ISAValues = getISAValuesFromHeight(y(3));
-    rhoISA = ISAValues(2);
     sound_speed = ISAValues(1);
     current_mach = y(1)/sound_speed;
 
 	%%%%% Thrust
 	thrust = 9.8*P.Isp(I)*P.Mp(I)/P.tb(I)./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
-	Drag = -0.5*P.Sref*P.CD0*rhoISA.*y(1).*abs(y(1))./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
+    %Drag taken into account only for stage 1 and mach>=0.5 as fixed for
+    %this problem.
+    if (current_mach >= 0.5 && I==1)
+        Drag = -0.5*P.Sref*getLauncherParasiteDrag(current_mach)*rhoISA(y(3)).*y(1).*abs(y(1))./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
+    else
+        Drag = 0;
+    end
 	%%%%%
 
+    %% TODO Guide law tan(theta) = (1 − t/tf) * tan(theta0).
 	yp = [thrust + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
           (P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
 		  y(1).*cos(y(2));...
