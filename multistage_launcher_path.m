@@ -1,7 +1,7 @@
 close all
 clc
 
-addpath('/home/rich/grado/asignaturas/misiles/practicas/sesion_3_lanzadores/');
+%addpath('/home/rich/grado/asignaturas/misiles/practicas/sesion_3_lanzadores/');
 
 %% Trabajo 1
 %Parametros
@@ -10,11 +10,20 @@ params = paramSet('Isp', [248.1172 293.8785 470.0419 0],...
 				 'M', [185.015 38 12 3.38]*1e3,...
 				 'tb',[150 125 600 inf],...
 				 'Sref',pi*(5)^2/4,...
-				 'CD0',0,...
 				 'g0',9.81);
 
+earth_gravitacional_constant = 3.986e14; %m³/s²
+target_height = 1230e3; %m
+Rt = 6378.14e3 %earth radius m 
+
+%speed needed for a successful circle orbit around earth at 1230 km.
+orbital_speed = sqrt(earth_gravitacional_constant/(Rt + target_height)); %m/s
+
 vertical_path = intMultiStage2DWithDrag([0 30],[1e-7; 0; 1e-7; 0], params);
-steering_path = intMultiStage2DWithDrag([30 300], vertical_path.y(:,end) + [0; .45*pi/180; 0; 0], params);%steering angle injected
+steering_path = intMultiStage2DWithDrag([30 300], vertical_path.y(:,end) + [0; .52*pi/180; 0; 0], params);%steering angle injected
+
+%alpha=0 means theta=phi. Need to pass this angle parameter for next path. 
+params = paramSet('beta0' ,steering_path.y(2,end));
 guided_path = intMultiStage2DWithDrag([300 875], steering_path.y(:,end), params);
 
 
