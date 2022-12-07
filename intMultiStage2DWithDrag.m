@@ -37,22 +37,21 @@ function yp = odefun(t, y, P)
     end
 	%%%%%
 
-    %%Guide law tan(theta) = (1 − (t-t0)/tf) * tan(theta0).
-    if (t>=300 && not(P.beta0==0)) %P.beta0==0 if this function is called for steering path
+    %%Guide law tan(beta) = (1 − t/tf) * tan(beta0).
+      
+    if (t>300 && not(P.beta0==0)) %P.beta0==0 if this function is called for steering path
         beta0 = P.beta0; %Grab beta0 angle from last path.
-        t0 = P.tb(1) + P.tb(2) + 300; %s tiempo global en que comienza el guiado
-        delta_t = P.tb(3) - 300; %tiempo total que se emplea en el guiado
-        error = pi/2 - y(2) - atan((1 - (t-t0)/(delta_t))*tan(pi/2 - beta0));
+        tf = P.tb(3) + P.tb(1) + P.tb(2); %final time of guiding (absolute) 
+        error = pi/2 - y(2) - atan(((1 - (t)/(tf))*tan(beta0)));
         delta = error;
     else
         delta = 0; %engine line aligned with launcher axis
     end
 
-	yp = [thrust*cos(delta) + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
-      thrust*sin(delta)./y(1)+(P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
+	yp = [thrust.*cos(delta) + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
+      thrust.*sin(delta)+(P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
 	  y(1).*cos(y(2));...
 	  y(1).*sin(y(2))./(P.Rt+y(3))];
-      
 end
 
 function rho = rhoISA(z)
