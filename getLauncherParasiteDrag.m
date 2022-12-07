@@ -92,7 +92,7 @@ function drag_coefficient = getLauncherParasiteDrag(mach_number, constant_Reynol
     %% Base drag for launcher
     gas_outlet_surface = 0.8 * reference_surface;
     base_surface = reference_surface;
-    Cd_base = getBaseDrag(mach_number, gas_outlet_surface, base_surface);
+    Cd_base = getBaseDrag(mach_number, gas_outlet_surface, base_surface, true);
     
     %% Total parasite drag
     drag_coefficient = Cd_wave + Cd_friction + Cd_base;
@@ -116,14 +116,14 @@ function drag_coefficient= getBaseDrag(mach_number, gas_outlet_surface, base_sur
             case false
                 drag_coefficient = 0.25/mach_number * (base_surface / base_surface);
             case true
-                drag_coefficient = 0.25/mach_number * (base_surface - gas_outlet_surface / base_surface);
+                drag_coefficient = 0.25/mach_number * (base_surface - gas_outlet_surface) / base_surface;
         end
     elseif flowKind == flowVelocityRegime.subsonic
         switch engine_on
             case false
                 drag_coefficient = (0.12 + 0.13*mach_number^2) * (base_surface / base_surface);
             case true
-                drag_coefficient = (0.12 + 0.13*mach_number^2) * (base_surface - gas_outlet_surface / base_surface);
+                drag_coefficient = (0.12 + 0.13*mach_number^2) * (base_surface - gas_outlet_surface) / base_surface;
         end
     end
 end
