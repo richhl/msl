@@ -40,7 +40,7 @@ function drag_coefficient = getLauncherParasiteDrag(mach_number, constant_Reynol
     cylinder3_length = 6.6; %m
     cylinder4_length = 21; %m
     total_length = warhead_length + cylinder1_length + cylinder2_length...
-                    + cylinder3_length + cylinder4_length;
+                    +cone_trunk_length+ cylinder3_length + cylinder4_length;
     slenderness = total_length/d_base; 
     
     
@@ -70,7 +70,7 @@ function drag_coefficient = getLauncherParasiteDrag(mach_number, constant_Reynol
     
     % Friction Drag for tail_cylinder = cylinder3 + cylinder4
     reference_length = cylinder3_length + cylinder4_length;
-    wet_surface = pi * warhead_d * reference_length; %surface in contact with the flow
+    wet_surface = pi * d_base * reference_length; %surface in contact with the flow
     element_shape = shapeType.flat;
     Cd_friction_tail_cylinder = getFrictionDragCoefficient(mach_number, reference_length, element_shape, wet_surface, reference_surface, constant_Reynolds, height);
     
