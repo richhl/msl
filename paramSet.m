@@ -18,6 +18,7 @@ function options = paramSet(varargin)
 %   
 
 default = struct('Isp', [280 300 465 0],...
+                 'T', [2000 700 80 0]*1e3,...
 				 'Mp', [435 180 32 0]*1e3,...
 				 'M', [483 200 35 7]*1e3,...
 				 'tb',[129.39 172.1 729.12 inf],...
@@ -28,6 +29,7 @@ default = struct('Isp', [280 300 465 0],...
 % Print out possible values of properties.
 	if (nargin == 0) && (nargout == 0)
 		fprintf('          Isp: [ scalar or row vector (sg) ]\n');
+		fprintf('          T:   [ scalar or row vector (N) ]\n');
 		fprintf('          tb : [ scalar or row vector (sg) ]\n');
 		fprintf('          M  : [ scalar or row vector (kg)  \n');
 		fprintf('          Mp : [ scalar or row vector (kg)  \n'); 
@@ -37,6 +39,7 @@ default = struct('Isp', [280 300 465 0],...
 
 	Names = [
 		'Isp             '
+		'T               '
 		'tb              '
 		'M               '
 		'Mp              '

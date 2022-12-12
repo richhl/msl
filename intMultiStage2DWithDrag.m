@@ -13,8 +13,8 @@ function m = intMultiStage2DWithDrag(tspan, IC, varargin)
 %%%%%%%%%%%%%%%%%%%Extra, useful quantities
 	m.Pd = .5*rhoISA(m.y(3,:)).*m.y(1,:).^2;
 	m.Qwp = .5*rhoISA(m.y(3,:)).*m.y(1,:).^3;
-	I = interp1(m.p.t0, m.p.i, m.x, 'previous', 'extrap');
-	m.Thrust = 9.8*m.p.Isp(I).*m.p.Mp(I)./params.tb(I);
+	I = interp1(m.p.t0, m.p.i, m.x, 'previous', 'extrap');      
+    m.Thrust = params.T(I);
 	m.rho = rhoISA(m.y(3,:));
 %%%%%%%%%%%%%%%%%%%
 end
@@ -27,7 +27,8 @@ function yp = odefun(t, y, P)
     current_mach = y(1)/sound_speed;
 
 	%%%%% Thrust
-	thrust = 9.8*P.Isp(I)*P.Mp(I)/P.tb(I)./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
+    thrust = P.T(I)./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
+	%thrust = 9.8*P.Isp(I)*P.Mp(I)/P.tb(I)./(P.M0(I)-P.Mp(I).*(t-P.t0(I))/P.tb(I));
     %Drag taken into account only for stage 1 and mach>=0.5 as fixed for
 %     %this problem.
      if (current_mach >= 0.5 && I==1)
@@ -38,8 +39,10 @@ function yp = odefun(t, y, P)
 	%%%%%
 
     %%Guide law tan(beta) = (1 − t/tf) * tan(beta0).
-      
-    if (t>300 && not(P.beta0==0)) %P.beta0==0 if this function is called for steering path
+
+    %Apply guiding law if
+    % not (P.beta0==0) assurethis function is called for guiding path simulation
+    if (t>300 && not(P.beta0==0)) 
         beta0 = P.beta0; %Grab beta0 angle from last path.
         tf = P.tb(3) + P.tb(1) + P.tb(2); %final time of guiding (absolute) 
         error = pi/2 - y(2) - atan(((1 - (t)/(tf))*tan(beta0)));
