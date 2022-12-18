@@ -41,18 +41,26 @@ function yp = odefun(t, y, P)
     %%Guide law tan(beta) = (1 − t/tf) * tan(beta0).
 
     %Apply guiding law if
-    % not (P.beta0==0) assurethis function is called for guiding path simulation
-    if (t>300 && not(P.beta0==0)) 
+    % not (P.beta0==0) assure this function is called for guiding path simulation
+    if (t>=P.guidingTime && not(P.beta0==0)) 
         beta0 = P.beta0; %Grab beta0 angle from last path.
         tf = P.tb(3) + P.tb(1) + P.tb(2); %final time of guiding (absolute) 
         error = pi/2 - y(2) - atan(((1 - (t)/(tf))*tan(beta0)));
-        delta = error;
+         if error < 1e-5 
+             delta = 0;
+         else
+            delta = error;
+         end
     else
         delta = 0; %engine line aligned with launcher axis
     end
 
+    if (y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + y(3))))
+        thrust=0; %Power of if orbital speed reached for current height.
+    end
+
 	yp = [thrust.*cos(delta) + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
-      thrust.*sin(delta)+(P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
+      thrust.*sin(delta)/y(1)+(P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
 	  y(1).*cos(y(2));...
 	  y(1).*sin(y(2))./(P.Rt+y(3))];
 end

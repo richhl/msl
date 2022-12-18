@@ -25,4 +25,8 @@ yticks([0.3 0.6])
 txt = '\leftarrow   Interpolación transónico'
 text(1.1,0.3,txt,'HorizontalAlignment','left')
 plot(M_(11:end), Cd(11:end),'b');
-plot(p.Mach, p.Cd0,'r-');
+%plot(p.Mach, p.Cd0,'r-');
+
+matriz_datos = zeros(number_of_points,2)
+matriz_datos(1:end,1) = M_
+matriz_datos(1:end,2) = Cd
