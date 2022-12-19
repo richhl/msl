@@ -55,8 +55,8 @@ function yp = odefun(t, y, P)
         delta = 0; %engine line aligned with launcher axis
     end
 
-    if (y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + y(3))))
-        thrust=0; %Power of if orbital speed reached for current height.
+    if (P.throttleSwitch == true && y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + y(3))))
+        thrust=0; %Power off if orbital speed reached for current height.
     end
 
 	yp = [thrust.*cos(delta) + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
@@ -70,7 +70,7 @@ function rho = rhoISA(z)
 end
 
 function [position, isterminal, direction] = EventsFcn(t, y)
-	position = [y(1).*cos(y(2)); y(3)];
+	position = [y(1).*cos(y(2)); y(3)>=6.5e5];
 	isterminal = [0; 1];
-	direction = [-1; -1];
+	direction = [-1; 1];
 end

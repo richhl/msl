@@ -1,6 +1,7 @@
 close all
 clc
 
+%function gammaGT = findGravityTurnAngle(height, start_angle, end_angle)
 %%%%%
 %% This script aim is finding an initial angle such as the launcher
 %% would reach 650 Km height with enough speed for a circular orbit.
@@ -31,7 +32,7 @@ final_speed_vector = zeros(1,20);
 orbital_speed_vector = zeros(1,20);
 final_theta_vector = zeros(1,20);
 
-gammaGT=[1.5:0.01:2.5];
+gammaGT=[3.5:-0.05:2];
 for i=1:length(gammaGT)
     vertical_path = intMultiStage2DWithDrag([0 startTimeGT],[1e-7; 0; 1e-7; 0], params);
     params = paramSet('T', [2718 798 83 0]*1e3,...
@@ -49,6 +50,7 @@ for i=1:length(gammaGT)
 			     'Sref',pi*(5)^2/4,...
                  'beta0' ,pi/2 - steering_path.y(2,end),...
                  'guidingTime' , startTimeGuiding,...
+                 'throttleSwitch' , false,...
 			     'g0',9.81);    
     guided_path = intMultiStage2DWithDrag([endTimeGT 875], steering_path.y(:,end), params);
     speed_vector=guided_path.y(1,:);
@@ -75,6 +77,7 @@ ylabel('Velocidades')
 xtickangle(45)
 plot(final_gamma_vector,orbital_speed_vector,'green-');
 
+% TODO: selectedGamma = interx
 %% First shooting give gammaGT 2.02
 %% No need to go to second shooting.
 

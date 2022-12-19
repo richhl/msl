@@ -24,16 +24,22 @@ default = struct('Isp', [280 300 465 0],...
 				 'tb',[129.39 172.1 729.12 inf],...
 				 'Sref',pi*(2)^2/4,...
 				 'beta0',0,...
-                 'guidingTime',400,...
+                 'guidingTime',inf,...
+                 'throttleSwitch', false,...
 				 'g0',9.8);
 				 
 % Print out possible values of properties.
 	if (nargin == 0) && (nargout == 0)
-		fprintf('          Isp: [ scalar or row vector (sg) ]\n');
-		fprintf('          T:   [ scalar or row vector (N) ]\n');
-		fprintf('          tb : [ scalar or row vector (sg) ]\n');
-		fprintf('          M  : [ scalar or row vector (kg)  \n');
-		fprintf('          Mp : [ scalar or row vector (kg)  \n'); 
+		fprintf('          Isp:            [ scalar or row vector (s) ]\n');
+		fprintf('          T:              [ scalar or row vector (N) ]\n');
+		fprintf('          tb :            [ scalar or row vector (s) ]\n');
+		fprintf('          Mp :            [ scalar or row vector (kg)  \n'); 
+		fprintf('          M  :            [ scalar or row vector (kg)  \n');
+		fprintf('          tb :            [ scalar or row vector (s)  \n'); 
+		fprintf('          Sref :          [ scalar               (m²)  \n'); 
+		fprintf('          beta0 :         [ scalar angle         (rd)  \n'); 
+		fprintf('          guidingTime :   [ scalar t startguiding (s) \n'); 
+		fprintf('          throttleSwitch: [ boolean throttle control  \n'); 
 		fprintf('\n');
 	return;
 	end
@@ -47,6 +53,7 @@ default = struct('Isp', [280 300 465 0],...
 		'Sref            '
 		'beta0           '
         'guidingTime     '
+        'throttleSwitch  '
         'g0              '
 		];
 
