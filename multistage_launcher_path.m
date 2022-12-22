@@ -23,7 +23,7 @@ params = paramSet('T', [2718 798 83 0]*1e3,...
 Rt = 6378e3 %earth radius m 
 earth_gravitacional_constant = 9.81*Rt^2; %m³/s²
 startTimeGT = 45; %s time when gravity turn starts
-endTimeGT = 600; %s time when gravity turn 'ends' 
+endTimeGT = 700; %s time when gravity turn 'ends' 
 startTimeGuiding = endTimeGT; % time when guiding by nozzle law enters 
 target_height = 650e3; %m
 
@@ -31,7 +31,7 @@ target_height = 650e3; %m
 orbital_speed = sqrt(earth_gravitacional_constant/(Rt + target_height)); %m/s
 
 
-%Gamma shooting, solution 2.02 degrees. See
+%Gamma shooting, solution 3.08 degrees. See
 %multistage_launcher_gravity_turn_angle.m
 %% Apartado 2             
 vertical_path = intMultiStage2DWithDrag([0 startTimeGT],[1e-7; 0; 1e-7; 0], params);
@@ -42,7 +42,7 @@ vertical_path = intMultiStage2DWithDrag([0 startTimeGT],[1e-7; 0; 1e-7; 0], para
 			     'Sref',pi*(5)^2/4,...
                  'guidingTime' , startTimeGuiding,...
 			     'g0',9.81);
-    steering_path = intMultiStage2DWithDrag([startTimeGT endTimeGT], vertical_path.y(:,end) + [0; 3.078*pi/180; 0; 0], params);%steering angle injected
+    steering_path = intMultiStage2DWithDrag([startTimeGT endTimeGT], vertical_path.y(:,end) + [0; 3.08*pi/180; 0; 0], params);%steering angle injected
     params = paramSet('T', [2718 798 83 0]*1e3,...
 			     'Mp', [167.5 34.6 10.8 0]*1e3,...
 			     'M', [185.015 38 12 3.38]*1e3,...

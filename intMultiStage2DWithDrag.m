@@ -5,8 +5,10 @@ function m = intMultiStage2DWithDrag(tspan, IC, varargin)
 		params = varargin{1};
 	end
 
-	options = odeset('Events', @EventsFcn, 'RelTol', 1e-10, 'AbsTol', 1e-10);
-	sol = ode45(@(t,y) odefun(t, y, params), tspan, IC, options);
+	%options = odeset('Events', @EventsFcn, 'RelTol', 1e-10, 'AbsTol', 1e-10);
+    %No need to use events
+	options = odeset('RelTol', 1e-10, 'AbsTol', 1e-10);
+    sol = ode45(@(t,y) odefun(t, y, params), tspan, IC, options);
 	m = sol;
 	m.p = params;
 	
@@ -55,10 +57,20 @@ function yp = odefun(t, y, P)
         delta = 0; %engine line aligned with launcher axis
     end
 
-    if (P.throttleSwitch == true && y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + y(3))))
-        thrust=0; %Power off if orbital speed reached for current height.
-    end
 
+    %%% Uncomment this block to trim throttle for startGravityTurn not equal to 45
+    %%% or endGravityTurn not equal to 700
+    %if (P.throttleSwitch == true && y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + y(3))))
+%     if (P.throttleSwitch == true && y(1) >= sqrt(P.g0*P.Rt^2/(P.Rt + 6.5e5)))
+%          thrust=0; %Power off if orbital speed reached for target height.
+%     end
+
+    %%% Comment this block to trim throttle for startGravityTurn not equal to 45
+    %%% or endGravityTurn not equal to 700. 
+    if (t>=812.5043) %time found for startGravityTurn=45 && endGravityTurn=700
+        thrust=0;
+    end
+    
 	yp = [thrust.*cos(delta) + Drag - P.g0*cos(y(2))./(1+y(3)/P.Rt).^2;...
       thrust.*sin(delta)/y(1)+(P.g0./y(1)./(1+y(3)/P.Rt).^2-y(1)./(P.Rt+y(3))).*sin(y(2));...
 	  y(1).*cos(y(2));...
@@ -69,8 +81,9 @@ function rho = rhoISA(z)
 	rho = (1.225*(1-z/44.338e3).^4.25).*(z < 11e3) + (0.365*exp((11e3-z)/(6.35e3))).*(z >= 11e3);
 end
 
+%%not used
 function [position, isterminal, direction] = EventsFcn(t, y)
 	position = [y(1).*cos(y(2)); y(3)>=6.5e5];
-	isterminal = [0; 1];
+	isterminal = [0; 0];
 	direction = [-1; 1];
 end

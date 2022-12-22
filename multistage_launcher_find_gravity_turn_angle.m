@@ -18,7 +18,7 @@ clc
 Rt = 6378e3 %earth radius m 
 earth_gravitacional_constant = 9.81*Rt^2; %m³/s²
 startTimeGT = 45; %s time when gravity turn starts
-endTimeGT = 600; %s time when gravity turn 'ends' 
+endTimeGT = 700; %s time when gravity turn 'ends' 
 startTimeGuiding = endTimeGT; % time when guiding by nozzle law enters 
 % Our strategy is shooting in a range from 1.5 to 2.5 degrees, and plot
 % speed vs. orbital speed. If we got enough speed to leave the launcher
@@ -67,15 +67,24 @@ for i=1:length(gammaGT)
 end
 
 %% Plot speed and height vs. orbital speed 
-cd_figure = plot(final_gamma_vector,final_speed_vector,'k');
+cd_figure = plot(final_gamma_vector,final_speed_vector,'green');
 set(gca,'color', [0.8 0.8 0.8]);
 hold on;
-title("Velocidad vs. velocidad orbital (para distintos ángulos shooting)");
+title("Speed, Height & Orbital Speed vs. Shooting angle");
 grid on
-xlabel('Ángulo de giro por gravedad') 
-ylabel('Velocidades') 
+xlabel('Shooting Angle for Gravity Turn') 
+yyaxis left
+plot(final_gamma_vector,orbital_speed_vector,'green--');
+ylabel('Speed (m/s)') 
+%txt = '\leftarrow   Gamma seleccionado 3.08º'
+%text(3.08,7950,txt,'HorizontalAlignment','left')
+yyaxis right
+ylabel('Height (Km)')
+plot(final_gamma_vector,final_height_vector*1e-3,'b');
+yline(650,'b--',{'Target','Height'});
+xline(3.08,'b-',{'Selected Shooting Angle','3.08 º'});
 xtickangle(45)
-plot(final_gamma_vector,orbital_speed_vector,'green-');
+legend('Final speed','Orbital speed','Final height','Target height')
 
 % TODO: selectedGamma = interx
 %% First shooting give gammaGT 2.02
